@@ -4,6 +4,11 @@ on:
   repository_dispatch:
     types: [jira-approval]
   workflow_dispatch:
+    inputs:
+      user_email:
+        description: 'Email address of the user to provision example: first.last@example.com'
+        required: true
+        type: string
 
 jobs:
   snowflake-provisioning:
@@ -28,9 +33,9 @@ jobs:
           SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
           SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
           SNOWFLAKE_PRIVATE_KEY_PASSPHRASE: ${{ secrets.SNOWFLAKE_PRIVATE_KEY_PASSPHRASE }}
-          # Metadata from Jira Payload (hardcoded for testing)
-          USER_EMAIL: john.booth@example.com
-          ROLE_NAME: analyst
+          # Metadata from Jira Payload or Manual Input
+          USER_EMAIL: ${{ github.event.client_payload.email || github.event.inputs.user_email }}
+          ROLE_NAME: ${{ github.event.client_payload.role || 'analyst' }}
         run: python .github/scripts/provision_snowflake.py
 
       # - name: Update Jira Ticket - Success
