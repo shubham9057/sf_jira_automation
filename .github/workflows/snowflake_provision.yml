@@ -30,7 +30,7 @@ jobs:
           # Metadata from Jira Payload (hardcoded for testing)
           USER_EMAIL: john.booth@example.com
           ROLE_NAME: analyst
-        run: python provision_snowflake.py
+        run: python .github/scripts/provision_snowflake.py
 
       # - name: Update Jira Ticket - Success
       #   if: success()
