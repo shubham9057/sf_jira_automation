@@ -56,8 +56,7 @@ def main():
             LOGIN_NAME = '{display_name}'
             DISPLAY_NAME = '{display_name}'
             EMAIL = '{user_email}'
-            MUST_CHANGE_PASSWORD = TRUE
-            DEFAULT_ROLE = IDENTIFIER('{read_role}');
+            MUST_CHANGE_PASSWORD = TRUE;
         """)
 
         # -- Step 2: Create custom roles (READ and READWRITE)
