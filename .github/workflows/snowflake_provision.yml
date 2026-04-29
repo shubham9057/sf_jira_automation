@@ -3,6 +3,7 @@ name: Snowflake Access Provisioning
 on:
   repository_dispatch:
     types: [jira-approval]
+  workflow_dispatch:
 
 jobs:
   snowflake-provisioning:
