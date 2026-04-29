@@ -9,6 +9,7 @@ def main():
     sf_account = os.getenv('SNOWFLAKE_ACCOUNT')
     sf_user = os.getenv('SNOWFLAKE_USER')
     private_key_data = os.getenv('SNOWFLAKE_PRIVATE_KEY')
+    private_key_passphrase = os.getenv('SNOWFLAKE_PRIVATE_KEY_PASSPHRASE')
 
     # Basic Validation
     if not all([user_email, role_name, sf_account, sf_user, private_key_data]):
@@ -17,10 +18,12 @@ def main():
 
     try:
         # Establish Connection using Key-Pair Auth
+        # If private key is encrypted, provide the passphrase; else, pass None
         ctx = snowflake.connector.connect(
             user=sf_user,
             account=sf_account,
-            private_key=private_key_data.encode()
+            private_key=private_key_data.encode(),
+            private_key_passphrase=private_key_passphrase.encode() if private_key_passphrase else None
         )
         cs = ctx.cursor()
 
