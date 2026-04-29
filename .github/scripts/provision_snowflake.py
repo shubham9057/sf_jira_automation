@@ -1,6 +1,8 @@
 import snowflake.connector
 import os
 import sys
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
 
 def main():
     # Retrieve environment variables injected by GitHub Actions
@@ -17,13 +19,23 @@ def main():
         sys.exit(1)
 
     try:
+        # Convert PEM format private key to DER format
+        private_key_obj = serialization.load_pem_private_key(
+            private_key_data.encode(),
+            password=private_key_passphrase.encode() if private_key_passphrase else None,
+            backend=default_backend()
+        )
+        private_key_der = private_key_obj.private_bytes(
+            encoding=serialization.Encoding.DER,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption()
+        )
+
         # Establish Connection using Key-Pair Auth
-        # If private key is encrypted, provide the passphrase; else, pass None
         ctx = snowflake.connector.connect(
             user=sf_user,
             account=sf_account,
-            private_key=private_key_data.encode(),
-            private_key_passphrase=private_key_passphrase.encode() if private_key_passphrase else None
+            private_key=private_key_der
         )
         cs = ctx.cursor()
 
