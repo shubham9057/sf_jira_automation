@@ -1,0 +1,54 @@
+name: Snowflake Access Provisioning - Manual
+
+on:
+  workflow_dispatch:
+    inputs:
+      user_email:
+        description: 'Email address of the user to provision example: first.last@example.com'
+        required: true
+        type: string
+      role_name:
+        description: 'Role to assign (default: analyst)'
+        required: false
+        type: string
+        default: 'analyst'
+
+jobs:
+  snowflake-provisioning:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Dependencies
+        run: pip install snowflake-connector-python cryptography
+
+      - name: Execute Snowflake Provisioning
+        env:
+          # Snowflake Connection Credentials
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
+          SNOWFLAKE_PRIVATE_KEY_PASSPHRASE: ${{ secrets.SNOWFLAKE_PRIVATE_KEY_PASSPHRASE }}
+          # Manual Input
+          USER_EMAIL: ${{ github.event.inputs.user_email }}
+          ROLE_NAME: ${{ github.event.inputs.role_name || 'analyst' }}
+        run: python .github/scripts/provision_snowflake.py
+
+      - name: Provisioning Result
+        if: success()
+        run: |
+          echo "✅ Successfully provisioned Snowflake access for ${{ github.event.inputs.user_email }}"
+          echo "Role: ${{ github.event.inputs.role_name || 'analyst' }}"
+
+      - name: Provisioning Failed
+        if: failure()
+        run: |
+          echo "❌ Failed to provision Snowflake access for ${{ github.event.inputs.user_email }}"
+          echo "Please check the logs above for error details."

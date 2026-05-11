@@ -1,0 +1,75 @@
+name: Snowflake Access Provisioning - Jira Dispatch
+
+on:
+  repository_dispatch:
+    types: [jira-approval]
+
+jobs:
+  snowflake-provisioning:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Dependencies
+        run: pip install snowflake-connector-python cryptography
+
+      - name: Execute Snowflake Provisioning
+        env:
+          # Snowflake Connection Credentials
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
+          SNOWFLAKE_PRIVATE_KEY_PASSPHRASE: ${{ secrets.SNOWFLAKE_PRIVATE_KEY_PASSPHRASE }}
+          # Metadata from Jira Payload
+          USER_EMAIL: ${{ github.event.client_payload.email }}
+          ROLE_NAME: ${{ github.event.client_payload.role || 'analyst' }}
+        run: python .github/scripts/provision_snowflake.py
+
+      - name: Update Jira Ticket - Success
+        if: success()
+        env:
+          JIRA_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          JIRA_USER: ${{ secrets.JIRA_USER_EMAIL }}
+          TICKET_ID: ${{ github.event.client_payload.ticket_id }}
+        run: |
+          # Post success comment
+          curl --request POST \
+            --url "https://atriumai.atlassian.net/rest/api/3/issue/$TICKET_ID/comment" \
+            --user "$JIRA_USER:$JIRA_TOKEN" \
+            --header 'Content-Type: application/json' \
+            --data '{"body": {"type": "doc", "version": 1, "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Provisioning Complete: Snowflake user and role access granted via GitHub Actions."}]}}]}'
+          
+          # Transition to Done (ID 31 - update if different)
+          curl --request POST \
+            --url "https://atriumai.atlassian.net/rest/api/3/issue/$TICKET_ID/transitions" \
+            --user "$JIRA_USER:$JIRA_TOKEN" \
+            --header 'Content-Type: application/json' \
+            --data '{"transition": {"id": "31"}}'
+
+      - name: Update Jira Ticket - Failure
+        if: failure()
+        env:
+          JIRA_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          JIRA_USER: ${{ secrets.JIRA_USER_EMAIL }}
+          TICKET_ID: ${{ github.event.client_payload.ticket_id }}
+        run: |
+          # Post failure comment
+          curl --request POST \
+            --url "https://atriumai.atlassian.net/rest/api/3/issue/$TICKET_ID/comment" \
+            --user "$JIRA_USER:$JIRA_TOKEN" \
+            --header 'Content-Type: application/json' \
+            --data '{"body": {"type": "doc", "version": 1, "content": [{"type": "paragraph", "content": [{"type": "text", "text": "ERROR: Snowflake provisioning failed. Please check GitHub Action logs for technical details."}]}}]}'
+          
+          # Transition to In Progress/Reopened (ID 10 - update if different for your failure state)
+          curl --request POST \
+            --url "https://atriumai.atlassian.net/rest/api/3/issue/$TICKET_ID/transitions" \
+            --user "$JIRA_USER:$JIRA_TOKEN" \
+            --header 'Content-Type: application/json' \
+            --data '{"transition": {"id": "10"}}'
