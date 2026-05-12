@@ -40,12 +40,13 @@ jobs:
           TICKET_ID: ${{ github.event.client_payload.ticket_id }}
         run: |
           # Post success comment
-          curl --request POST \
-            --url "https://ssfintech76.atlassian.net/rest/api/3/issue/$TICKET_ID/comment" \
-            --user "$JIRA_USER:$JIRA_TOKEN" \
-            --header 'Content-Type: application/json' \
-            --data '{"body": {"type": "doc", "version": 1, "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Provisioning Complete: Snowflake user and role access granted via GitHub Actions."}]}}]}'
-          
+          curl -X POST \
+            "https://atriumai.atlassian.net/rest/api/3/issue/$TICKET_ID/comment" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Basic $(echo -n "$JIRA_USER:$JIRA_TOKEN" | base64)" \
+            -d '{"body": "Provisioning Complete: Snowflake user and role access granted via GitHub Actions."}' \
+            -v
+            
           # Transition to Done (ID 31 - update if different)
           curl --request POST \
             --url "https://ssfintech76.atlassian.net/rest/api/3/issue/$TICKET_ID/transitions" \
@@ -61,12 +62,13 @@ jobs:
           TICKET_ID: ${{ github.event.client_payload.ticket_id }}
         run: |
           # Post failure comment
-          curl --request POST \
-            --url "https://ssfintech76.atlassian.net/rest/api/3/issue/$TICKET_ID/comment" \
-            --user "$JIRA_USER:$JIRA_TOKEN" \
-            --header 'Content-Type: application/json' \
-            --data '{"body": {"type": "doc", "version": 1, "content": [{"type": "paragraph", "content": [{"type": "text", "text": "ERROR: Snowflake provisioning failed. Please check GitHub Action logs for technical details."}]}}]}'
-          
+          curl -X POST \
+            "https://atriumai.atlassian.net/rest/api/3/issue/$TICKET_ID/comment" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Basic $(echo -n "$JIRA_USER:$JIRA_TOKEN" | base64)" \
+            -d '{"body": "ERROR: Snowflake provisioning failed. Please check GitHub Action logs for technical details."}' \
+            -v
+            
           # Transition to In Progress/Reopened (ID 10 - update if different for your failure state)
           curl --request POST \
             --url "https://ssfintech76.atlassian.net/rest/api/3/issue/$TICKET_ID/transitions" \
