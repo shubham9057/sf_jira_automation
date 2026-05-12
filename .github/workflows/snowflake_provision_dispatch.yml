@@ -41,7 +41,7 @@ jobs:
         run: |
           # Post success comment
           curl -X POST \
-            "https://atriumai.atlassian.net/rest/api/3/issue/$TICKET_ID/comment" \
+            "https://ssfintech76.atlassian.net/rest/api/3/issue/$TICKET_ID/comment" \
             -H "Content-Type: application/json" \
             -H "Authorization: Basic $(echo -n "$JIRA_USER:$JIRA_TOKEN" | base64)" \
             -d '{"body": "Provisioning Complete: Snowflake user and role access granted via GitHub Actions."}' \
@@ -63,7 +63,7 @@ jobs:
         run: |
           # Post failure comment
           curl -X POST \
-            "https://atriumai.atlassian.net/rest/api/3/issue/$TICKET_ID/comment" \
+            "https://ssfintech76.atlassian.net/rest/api/3/issue/$TICKET_ID/comment" \
             -H "Content-Type: application/json" \
             -H "Authorization: Basic $(echo -n "$JIRA_USER:$JIRA_TOKEN" | base64)" \
             -d '{"body": "ERROR: Snowflake provisioning failed. Please check GitHub Action logs for technical details."}' \
