@@ -39,20 +39,19 @@ jobs:
           JIRA_USER: ${{ secrets.JIRA_USER_EMAIL }}
           TICKET_ID: ${{ github.event.client_payload.ticket_id }}
         run: |
-          # Post success comment
           JIRA_AUTH=$(echo -n "$JIRA_USER:$JIRA_TOKEN" | base64 -w 0)
           
-          # Post success comment
-          curl -X POST \
-            "https://ssfintech76.atlassian.net/rest/api/3/issue/$TICKET_ID/comment" \
+          # Post success comment with proper ADF format using jq
+          COMMENT_BODY=$(jq -n '{body: {type: "doc", version: 1, content: [{type: "paragraph", content: [{type: "text", text: "Provisioning Complete: Snowflake user and role access granted via GitHub Actions."}]}]}}')
+          curl "https://ssfintech76.atlassian.net/rest/api/3/issue/$TICKET_ID/comment" \
             -H "Content-Type: application/json" \
             -H "Authorization: Basic $JIRA_AUTH" \
-            -d '{"body": "Provisioning Complete: Snowflake user and role access granted via GitHub Actions."}' \
+            -d "$COMMENT_BODY" \
+            -w "\nHTTP Status: %{http_code}\n" \
             -v
           
           # Transition to Done (ID 31 - update if different)
-          curl -X POST \
-            "https://ssfintech76.atlassian.net/rest/api/3/issue/$TICKET_ID/transitions" \
+          curl "https://ssfintech76.atlassian.net/rest/api/3/issue/$TICKET_ID/transitions" \
             -H "Content-Type: application/json" \
             -H "Authorization: Basic $JIRA_AUTH" \
             -d '{"transition": {"id": "761"}}' \
@@ -67,17 +66,17 @@ jobs:
         run: |
           JIRA_AUTH=$(echo -n "$JIRA_USER:$JIRA_TOKEN" | base64 -w 0)
           
-          # Post failure comment
-          curl -X POST \
-            "https://ssfintech76.atlassian.net/rest/api/3/issue/$TICKET_ID/comment" \
+          # Post failure comment with proper ADF format using jq
+          COMMENT_BODY=$(jq -n '{body: {type: "doc", version: 1, content: [{type: "paragraph", content: [{type: "text", text: "ERROR: Snowflake provisioning failed. Please check GitHub Action logs for technical details."}]}]}}')
+          curl "https://ssfintech76.atlassian.net/rest/api/3/issue/$TICKET_ID/comment" \
             -H "Content-Type: application/json" \
             -H "Authorization: Basic $JIRA_AUTH" \
-            -d '{"body": "ERROR: Snowflake provisioning failed. Please check GitHub Action logs for technical details."}' \
+            -d "$COMMENT_BODY" \
+            -w "\nHTTP Status: %{http_code}\n" \
             -v
           
           # Transition to In Progress/Reopened (ID 10 - update if different for your failure state)
-          curl -X POST \
-            "https://ssfintech76.atlassian.net/rest/api/3/issue/$TICKET_ID/transitions" \
+          curl "https://ssfintech76.atlassian.net/rest/api/3/issue/$TICKET_ID/transitions" \
             -H "Content-Type: application/json" \
             -H "Authorization: Basic $JIRA_AUTH" \
             -d '{"transition": {"id": "961"}}' \
