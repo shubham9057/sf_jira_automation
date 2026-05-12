@@ -41,17 +41,17 @@ jobs:
         run: |
           # Post success comment
           curl --request POST \
-            --url "https://atriumai.atlassian.net/rest/api/3/issue/$TICKET_ID/comment" \
+            --url "https://ssfintech76.atlassian.net/rest/api/3/issue/$TICKET_ID/comment" \
             --user "$JIRA_USER:$JIRA_TOKEN" \
             --header 'Content-Type: application/json' \
             --data '{"body": {"type": "doc", "version": 1, "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Provisioning Complete: Snowflake user and role access granted via GitHub Actions."}]}}]}'
           
           # Transition to Done (ID 31 - update if different)
           curl --request POST \
-            --url "https://atriumai.atlassian.net/rest/api/3/issue/$TICKET_ID/transitions" \
+            --url "https://ssfintech76.atlassian.net/rest/api/3/issue/$TICKET_ID/transitions" \
             --user "$JIRA_USER:$JIRA_TOKEN" \
             --header 'Content-Type: application/json' \
-            --data '{"transition": {"id": "31"}}'
+            --data '{"transition": {"id": "761"}}'
 
       - name: Update Jira Ticket - Failure
         if: failure()
@@ -62,14 +62,14 @@ jobs:
         run: |
           # Post failure comment
           curl --request POST \
-            --url "https://atriumai.atlassian.net/rest/api/3/issue/$TICKET_ID/comment" \
+            --url "https://ssfintech76.atlassian.net/rest/api/3/issue/$TICKET_ID/comment" \
             --user "$JIRA_USER:$JIRA_TOKEN" \
             --header 'Content-Type: application/json' \
             --data '{"body": {"type": "doc", "version": 1, "content": [{"type": "paragraph", "content": [{"type": "text", "text": "ERROR: Snowflake provisioning failed. Please check GitHub Action logs for technical details."}]}}]}'
           
           # Transition to In Progress/Reopened (ID 10 - update if different for your failure state)
           curl --request POST \
-            --url "https://atriumai.atlassian.net/rest/api/3/issue/$TICKET_ID/transitions" \
+            --url "https://ssfintech76.atlassian.net/rest/api/3/issue/$TICKET_ID/transitions" \
             --user "$JIRA_USER:$JIRA_TOKEN" \
             --header 'Content-Type: application/json' \
-            --data '{"transition": {"id": "10"}}'
+            --data '{"transition": {"id": "961"}}'
