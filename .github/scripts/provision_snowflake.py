@@ -8,13 +8,14 @@ def main():
     # Retrieve environment variables injected by GitHub Actions
     user_email = os.getenv('USER_EMAIL')
     role_name = os.getenv('ROLE_NAME')
+    account_name = os.getenv('ACCOUNT_NAME')
     sf_account = os.getenv('SNOWFLAKE_ACCOUNT')
     sf_user = os.getenv('SNOWFLAKE_USER')
     private_key_data = os.getenv('SNOWFLAKE_PRIVATE_KEY')
     private_key_passphrase = os.getenv('SNOWFLAKE_PRIVATE_KEY_PASSPHRASE')
 
     # Basic Validation
-    if not all([user_email, role_name, sf_account, sf_user, private_key_data]):
+    if not all([user_email, role_name, account_name, sf_account, sf_user, private_key_data]):
         print("Error: Missing one or more required environment variables.")
         sys.exit(1)
 
@@ -39,7 +40,7 @@ def main():
         )
         cs = ctx.cursor()
 
-        print(f"Executing provisioning for: {user_email}")
+        print(f"Executing provisioning for: {user_email} (Account: {account_name})")
 
         # Derive display/login name: first letter of firstname + lastname (uppercase)
         first_name = user_email.split('@')[0].split('.')[0].upper()

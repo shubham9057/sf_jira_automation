@@ -22,14 +22,15 @@ jobs:
 
       - name: Execute Snowflake Provisioning
         env:
-          # Snowflake Connection Credentials
-          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          # Snowflake Connection Credentials - Select based on account
+          SNOWFLAKE_ACCOUNT: ${{ github.event.client_payload.account == 'Partner Account' && secrets.SNOWFLAKE_PARTNER_ACCOUNT || github.event.client_payload.account == 'Oculus Account' && secrets.SNOWFLAKE_OCULUS_ACCOUNT }}
           SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
           SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
           SNOWFLAKE_PRIVATE_KEY_PASSPHRASE: ${{ secrets.SNOWFLAKE_PRIVATE_KEY_PASSPHRASE }}
           # Metadata from Jira Payload
           USER_EMAIL: ${{ github.event.client_payload.email }}
           ROLE_NAME: ${{ github.event.client_payload.role || 'analyst' }}
+          ACCOUNT_NAME: ${{ github.event.client_payload.account }}
         run: python .github/scripts/provision_snowflake.py
 
       - name: Update Jira Ticket - Success
