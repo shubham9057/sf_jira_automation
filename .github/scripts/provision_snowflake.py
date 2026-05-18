@@ -52,6 +52,7 @@ def main():
         # -- Step 1: Use USERADMIN role to create the user
         cs.execute("USE ROLE USERADMIN;")
 
+        # Password-based authentication (default)
         cs.execute(f"""
         CREATE USER IF NOT EXISTS IDENTIFIER('{display_name}')
             LOGIN_NAME = '{display_name}'
@@ -61,6 +62,16 @@ def main():
             MUST_CHANGE_PASSWORD = TRUE
             TYPE = PERSON ;
         """)
+
+        # -- SSO-based authentication (commented out)
+        # cs.execute(f"""
+        # CREATE USER IF NOT EXISTS IDENTIFIER('{display_name}')
+        #     LOGIN_NAME = '{display_name}'
+        #     DISPLAY_NAME = '{display_name}'
+        #     EMAIL = '{user_email}'
+        #     TYPE = PERSON
+        #     DISABLED = FALSE ;
+        # """)
 
         # -- Step 2: Create custom roles (READ and READWRITE)
         cs.execute(f"CREATE ROLE IF NOT EXISTS IDENTIFIER('{read_role}');")
